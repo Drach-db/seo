@@ -19,7 +19,8 @@ function formatFileSize(bytes: number): string {
  * Получает размер HTML файла для страницы
  */
 function getHtmlFileSize(pageName: string): string | null {
-  const htmlPath = path.join(process.cwd(), 'out', 'seo-pages', pageName, 'index.html');
+  // Next.js с output:'export' генерирует файлы как /seo-pages/page-name.html
+  const htmlPath = path.join(process.cwd(), 'out', 'seo-pages', `${pageName}.html`);
 
   if (!fs.existsSync(htmlPath)) {
     console.warn(`⚠️  HTML файл не найден: ${htmlPath}`);
