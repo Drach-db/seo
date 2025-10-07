@@ -30,8 +30,18 @@ export interface ScreenData {
  * Читает данные из Google Sheets
  */
 export async function readGoogleSheets() {
-  // Читаем credentials
-  const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH, 'utf-8'));
+  // Читаем credentials из файла или переменной окружения
+  let credentials;
+
+  if (process.env.GOOGLE_CREDENTIALS) {
+    // CloudFlare Pages / CI/CD - из переменной окружения
+    credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+  } else if (fs.existsSync(CREDENTIALS_PATH)) {
+    // Локальная разработка - из файла
+    credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH, 'utf-8'));
+  } else {
+    throw new Error('Google credentials not found. Set GOOGLE_CREDENTIALS env variable or add google-credentials.json file');
+  }
 
   // Авторизация через Service Account
   const auth = new google.auth.GoogleAuth({
