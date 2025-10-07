@@ -2,40 +2,16 @@ import { google } from 'googleapis';
 import * as fs from 'fs';
 import * as path from 'path';
 import { PageData } from './sheets-reader';
+import { calculatePageMetrics } from './calculate-page-metrics';
 
 const SPREADSHEET_ID = '1RWKrSegxAgKLjcZ__VmH11tGJSaidQahusH4np3MPD0';
 const CREDENTIALS_PATH = path.join(process.cwd(), 'google-credentials.json');
 
 /**
- * Форматирует размер файла в человекочитаемый формат
- */
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-}
-
-/**
- * Получает размер HTML файла для страницы
- */
-function getHtmlFileSize(pageName: string): string | null {
-  // Next.js с output:'export' генерирует файлы как /seo-pages/page-name.html
-  const htmlPath = path.join(process.cwd(), 'out', 'seo-pages', `${pageName}.html`);
-
-  if (!fs.existsSync(htmlPath)) {
-    console.warn(`⚠️  HTML файл не найден: ${htmlPath}`);
-    return null;
-  }
-
-  const stats = fs.statSync(htmlPath);
-  return formatFileSize(stats.size);
-}
-
-/**
- * Обновляет размеры файлов в Google Sheets
+ * Обновляет метрики страниц в Google Sheets
  */
 export async function updateFileSizesInSheets(pages: PageData[]) {
-  console.log('\n📊 Обновление размеров файлов в Google Sheets...');
+  console.log('\n📊 Обновление метрик страниц в Google Sheets...');
 
   // Читаем credentials
   let credentials;
@@ -60,19 +36,30 @@ export async function updateFileSizesInSheets(pages: PageData[]) {
 
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i];
-    const fileSize = getHtmlFileSize(page.page_name);
+    const metrics = calculatePageMetrics(page.page_name);
 
-    if (fileSize) {
-      const rowNumber = i + 2; // +2 потому что: +1 для заголовка, +1 для индекса с 1
+    if (metrics) {
+      const rowNumber = i + 2; // +2: +1 для заголовка, +1 для индекса с 1
+
+      // Обновляем все метрики одной строкой
       updates.push({
-        range: `page!H${rowNumber}`, // Столбец H = file_size
-        values: [[fileSize]],
+        range: `page!H${rowNumber}:L${rowNumber}`, // Столбцы H-L
+        values: [[
+          metrics.page_size,
+          metrics.html_size,
+          metrics.css_size,
+          metrics.java_script_bundle_size,
+          metrics.image_size,
+        ]],
       });
-      console.log(`  ✅ ${page.page_name}: ${fileSize}`);
+
+      console.log(`  ✅ ${page.page_name}:`);
+      console.log(`     Total: ${metrics.page_size}`);
+      console.log(`     HTML: ${metrics.html_size} | CSS: ${metrics.css_size} | JS: ${metrics.java_script_bundle_size} | Images: ${metrics.image_size}`);
     }
   }
 
-  // Batch update всех размеров
+  // Batch update всех метрик
   if (updates.length > 0) {
     await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: SPREADSHEET_ID,
@@ -81,7 +68,7 @@ export async function updateFileSizesInSheets(pages: PageData[]) {
         data: updates,
       },
     });
-    console.log(`\n✅ Обновлено ${updates.length} размеров файлов в Google Sheets`);
+    console.log(`\n✅ Обновлено метрик для ${updates.length} страниц в Google Sheets`);
   } else {
     console.log('\n⚠️  Нет данных для обновления');
   }

@@ -13,7 +13,11 @@ export interface PageData {
   mcp: string;
   title: string;
   meta_description: string;
-  file_size?: string; // Размер HTML файла
+  page_size?: string; // Размер всей страницы
+  html_size?: string; // Размер HTML файла
+  css_size?: string; // Размер CSS
+  java_script_bundle_size?: string; // Размер JS бандла
+  image_size?: string; // Размер изображений
 }
 
 export interface ScreenData {
@@ -55,7 +59,7 @@ export async function readGoogleSheets() {
   // Читаем лист "page"
   const pageResponse = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: 'page!A:H', // Столбцы A-H (добавили file_size)
+    range: 'page!A:L', // Столбцы A-L (page_size, html_size, css_size, js_size, image_size)
   });
 
   // Читаем лист "screen"
@@ -76,7 +80,11 @@ export async function readGoogleSheets() {
     mcp: row[4] || '',
     title: row[5] || '',
     meta_description: row[6] || '',
-    file_size: row[7] || undefined,
+    page_size: row[7] || undefined,
+    html_size: row[8] || undefined,
+    css_size: row[9] || undefined,
+    java_script_bundle_size: row[10] || undefined,
+    image_size: row[11] || undefined,
   }));
 
   const screens: ScreenData[] = screenRows.slice(1).map((row) => ({
