@@ -13,6 +13,7 @@ export interface PageData {
   mcp: string;
   title: string;
   meta_description: string;
+  file_size?: string; // Размер HTML файла
 }
 
 export interface ScreenData {
@@ -46,7 +47,7 @@ export async function readGoogleSheets() {
   // Авторизация через Service Account
   const auth = new google.auth.GoogleAuth({
     credentials,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'], // Убрали .readonly для записи
   });
 
   const sheets = google.sheets({ version: 'v4', auth });
@@ -54,7 +55,7 @@ export async function readGoogleSheets() {
   // Читаем лист "page"
   const pageResponse = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: 'page!A:G', // Столбцы A-G
+    range: 'page!A:H', // Столбцы A-H (добавили file_size)
   });
 
   // Читаем лист "screen"
@@ -75,6 +76,7 @@ export async function readGoogleSheets() {
     mcp: row[4] || '',
     title: row[5] || '',
     meta_description: row[6] || '',
+    file_size: row[7] || undefined,
   }));
 
   const screens: ScreenData[] = screenRows.slice(1).map((row) => ({

@@ -7,6 +7,11 @@ rm -rf "$SEO_OUT"
 # Собираем весь сайт
 npm run build
 
+# Обновляем размеры файлов в Google Sheets
+echo ""
+echo "📊 Обновление размеров файлов в Google Sheets..."
+npx tsx scripts/update-file-sizes.ts
+
 # Копируем только SEO страницы + статику
 mkdir -p "$SEO_OUT"
 cp -r out/_next "$SEO_OUT/"
