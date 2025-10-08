@@ -48,6 +48,48 @@ export function adaptArticleHeaderProps(attrs: Record<string, any>): ArticleHead
   };
 }
 
+interface H1Props {
+  text: string;
+  showCircles?: boolean;
+  showStars?: boolean;
+  showWaves?: boolean;
+  showDots?: boolean;
+}
+
+/**
+ * Преобразует data-атрибуты в пропсы для H1
+ */
+export function adaptH1Props(attrs: Record<string, any>): H1Props {
+  return {
+    text: attrs.text || '',
+    showCircles: attrs.showCircles !== 'false',
+    showStars: attrs.showStars !== 'false',
+    showWaves: attrs.showWaves !== 'false',
+    showDots: attrs.showDots !== 'false',
+  };
+}
+
+interface H2Props {
+  text: string;
+  showCircles?: boolean;
+  showStars?: boolean;
+  showWaves?: boolean;
+  showDots?: boolean;
+}
+
+/**
+ * Преобразует data-атрибуты в пропсы для H2
+ */
+export function adaptH2Props(attrs: Record<string, any>): H2Props {
+  return {
+    text: attrs.text || '',
+    showCircles: attrs.showCircles !== 'false',
+    showStars: attrs.showStars !== 'false',
+    showWaves: attrs.showWaves !== 'false',
+    showDots: attrs.showDots !== 'false',
+  };
+}
+
 /**
  * Главная функция адаптации - выбирает нужный адаптер по названию компонента
  */
@@ -55,6 +97,12 @@ export function adaptProps(componentName: string, attrs: Record<string, any>): a
   switch (componentName) {
     case 'article_header':
       return adaptArticleHeaderProps(attrs);
+
+    case 'h1':
+      return adaptH1Props(attrs);
+
+    case 'h2':
+      return adaptH2Props(attrs);
 
     // Добавляй сюда адаптеры для других компонентов:
     // case 'feature_card':

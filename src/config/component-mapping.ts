@@ -1,9 +1,13 @@
 import { ComponentType } from 'react';
 import { ArticleHeader } from '../components/ui/article-header';
+import { H1 } from '../components/ui/h1';
+import { H2 } from '../components/ui/h2';
 
 // Маппинг: название из Google Sheets → React компонент
 export const COMPONENT_MAP: Record<string, ComponentType<any>> = {
   article_header: ArticleHeader,
+  h1: H1,
+  h2: H2,
   // Добавляй сюда новые компоненты по мере создания:
   // feature_card: FeatureCard,
   // faq_section: FaqSection,
