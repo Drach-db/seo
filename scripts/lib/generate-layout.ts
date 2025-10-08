@@ -11,11 +11,13 @@ export default function Layout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Header />
-      {children}
+      <main className="flex-grow">
+        {children}
+      </main>
       <Footer />
-    </>
+    </div>
   );
 }
 `;
