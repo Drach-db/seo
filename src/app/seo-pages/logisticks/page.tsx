@@ -1,3 +1,4 @@
+import { DecorativeBackground } from "@/components/ui/decorative-background";
 import { ArticleHeader } from "@/components/ui/article-header";
 import { Metadata } from "next";
 

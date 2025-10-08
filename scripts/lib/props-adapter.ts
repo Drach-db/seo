@@ -50,10 +50,6 @@ export function adaptArticleHeaderProps(attrs: Record<string, any>): ArticleHead
 
 interface H1Props {
   text: string;
-  showCircles?: boolean;
-  showStars?: boolean;
-  showWaves?: boolean;
-  showDots?: boolean;
 }
 
 /**
@@ -62,19 +58,11 @@ interface H1Props {
 export function adaptH1Props(attrs: Record<string, any>): H1Props {
   return {
     text: attrs.text || '',
-    showCircles: attrs.showCircles !== 'false',
-    showStars: attrs.showStars !== 'false',
-    showWaves: attrs.showWaves !== 'false',
-    showDots: attrs.showDots !== 'false',
   };
 }
 
 interface H2Props {
   text: string;
-  showCircles?: boolean;
-  showStars?: boolean;
-  showWaves?: boolean;
-  showDots?: boolean;
 }
 
 /**
@@ -83,10 +71,6 @@ interface H2Props {
 export function adaptH2Props(attrs: Record<string, any>): H2Props {
   return {
     text: attrs.text || '',
-    showCircles: attrs.showCircles !== 'false',
-    showStars: attrs.showStars !== 'false',
-    showWaves: attrs.showWaves !== 'false',
-    showDots: attrs.showDots !== 'false',
   };
 }
 

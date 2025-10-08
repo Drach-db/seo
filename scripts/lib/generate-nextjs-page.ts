@@ -9,32 +9,54 @@ export function generateNextJsPage(
   page: PageData,
   screens: ScreenData[]
 ): string {
+  // Группируем screens по screen_id
+  const screenGroups = groupByScreenId(screens);
+
   // Собираем импорты компонентов
   const componentImports = new Set<string>();
+  componentImports.add('DecorativeBackground'); // Всегда добавляем DecorativeBackground
+
   const componentUsages: string[] = [];
 
-  for (const screen of screens) {
-    if (!screen.artifact) {
-      // Если нет артефакта, просто вставляем HTML
-      if (screen.body) {
-        componentUsages.push(`  <div dangerouslySetInnerHTML={{ __html: \`${escapeBackticks(screen.body)}\` }} />`);
+  for (const group of screenGroups) {
+    // Если в группе только article_header - рендерим без DecorativeBackground
+    const hasOnlyArticleHeader = group.every(s => s.artifact === 'article_header');
+
+    if (hasOnlyArticleHeader) {
+      // Рендерим article_header без фона
+      for (const screen of group) {
+        const componentName = artifactToComponentName(screen.artifact);
+        componentImports.add(componentName);
+        const rawAttrs = parseDataAttributes(screen.body);
+        const props = adaptProps(screen.artifact, rawAttrs);
+        const propsString = generatePropsString(props);
+        componentUsages.push(`  <${componentName} ${propsString} />`);
       }
-      continue;
+    } else {
+      // Группа с другими компонентами - оборачиваем в DecorativeBackground
+      const groupComponents: string[] = [];
+
+      for (const screen of group) {
+        if (!screen.artifact) {
+          if (screen.body) {
+            groupComponents.push(`    <div dangerouslySetInnerHTML={{ __html: \`${escapeBackticks(screen.body)}\` }} />`);
+          }
+          continue;
+        }
+
+        const componentName = artifactToComponentName(screen.artifact);
+        componentImports.add(componentName);
+        const rawAttrs = parseDataAttributes(screen.body);
+        const props = adaptProps(screen.artifact, rawAttrs);
+        const propsString = generatePropsString(props);
+        groupComponents.push(`    <${componentName} ${propsString} />`);
+      }
+
+      // Оборачиваем группу в DecorativeBackground
+      componentUsages.push(`  <DecorativeBackground className="py-16 md:py-20 lg:py-24">`);
+      componentUsages.push(...groupComponents);
+      componentUsages.push(`  </DecorativeBackground>`);
     }
-
-    // Добавляем импорт компонента
-    const componentName = artifactToComponentName(screen.artifact);
-    componentImports.add(componentName);
-
-    // Парсим data-атрибуты из body
-    const rawAttrs = parseDataAttributes(screen.body);
-
-    // Адаптируем к нужной структуре пропсов
-    const props = adaptProps(screen.artifact, rawAttrs);
-
-    // Генерируем JSX для компонента
-    const propsString = generatePropsString(props);
-    componentUsages.push(`  <${componentName} ${propsString} />`);
   }
 
   // Генерируем импорты
@@ -62,6 +84,26 @@ ${componentUsages.join('\n')}
   );
 }
 `;
+}
+
+/**
+ * Группирует screens по screen_id
+ */
+function groupByScreenId(screens: ScreenData[]): ScreenData[][] {
+  const groups: Map<number, ScreenData[]> = new Map();
+
+  for (const screen of screens) {
+    const screenId = screen.screen_id;
+    if (!groups.has(screenId)) {
+      groups.set(screenId, []);
+    }
+    groups.get(screenId)!.push(screen);
+  }
+
+  // Возвращаем массив групп, отсортированный по screen_id
+  return Array.from(groups.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([_, screens]) => screens);
 }
 
 /**
