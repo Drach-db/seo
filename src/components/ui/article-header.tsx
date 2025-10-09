@@ -23,8 +23,8 @@ interface ArticleHeaderProps {
 }
 
 export function ArticleHeader({
-  title,
-  author,
+  title = 'Без заголовка',
+  author = { name: 'Аноним' },
   breadcrumb = {
     items: [
       { label: "Blog", href: "/blog" },
@@ -35,8 +35,8 @@ export function ArticleHeader({
     niche: "SEO",
     type: "case"
   },
-  readTime,
-  publishDate,
+  readTime = '5 мин',
+  publishDate = new Date().toLocaleDateString('ru-RU'),
   rawHtml,
   className
 }: ArticleHeaderProps) {
@@ -60,13 +60,13 @@ export function ArticleHeader({
     const date = extractValue('datePublished');
     const time = extractValue('timeRequired');
 
-    // Применяем
-    title = extractedTitle;
+    // Применяем извлечённые значения
+    if (extractedTitle) title = extractedTitle;
     if (authorName) {
       author = { name: authorName, avatar: authorImage || undefined };
     }
-    publishDate = date || publishDate;
-    readTime = time || readTime;
+    if (date) publishDate = date;
+    if (time) readTime = time;
   }
   return (
     <header className={cn("w-full bg-slate-900 relative overflow-hidden pt-20 md:pt-24 lg:pt-28 pb-16", className)}>

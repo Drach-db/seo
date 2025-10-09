@@ -6,12 +6,11 @@ interface H2Props {
   className?: string
 }
 
-export function H2({ text, rawHtml, className }: H2Props) {
+export function H2({ text = '', rawHtml, className }: H2Props) {
   if (rawHtml) {
     // Извлекаем текст из microdata
     const match = rawHtml.match(/itemprop="text"[^>]*>([^<]+)</i);
-    const extractedText = match ? match[1].trim() : text;
-    text = extractedText;
+    if (match) text = match[1].trim();
   }
 
   return (
