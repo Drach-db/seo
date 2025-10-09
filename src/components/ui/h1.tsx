@@ -1,11 +1,20 @@
 import { cn } from "@/lib/utils"
 
 interface H1Props {
-  text: string
+  text?: string
+  rawHtml?: string
   className?: string
 }
 
-export function H1({ text, className }: H1Props) {
+export function H1({ text, rawHtml, className }: H1Props) {
+  if (rawHtml) {
+    return (
+      <div className={cn("max-w-6xl mx-auto px-4 sm:px-6 lg:px-8", className)}>
+        <div dangerouslySetInnerHTML={{ __html: rawHtml }} />
+      </div>
+    )
+  }
+
   return (
     <div className={cn("max-w-6xl mx-auto px-4 sm:px-6 lg:px-8", className)}>
       <div className="bg-[#D67049] text-white rounded-2xl px-4 py-2 md:px-6 md:py-2.5 inline-block">

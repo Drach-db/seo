@@ -1,11 +1,20 @@
 import { cn } from "@/lib/utils"
 
 interface H2Props {
-  text: string
+  text?: string
+  rawHtml?: string
   className?: string
 }
 
-export function H2({ text, className }: H2Props) {
+export function H2({ text, rawHtml, className }: H2Props) {
+  if (rawHtml) {
+    return (
+      <div className={cn("max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-3 md:mt-4", className)}>
+        <div dangerouslySetInnerHTML={{ __html: rawHtml }} />
+      </div>
+    )
+  }
+
   return (
     <div className={cn("max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-3 md:mt-4", className)}>
       <div className="border-l-3 border-[#D67049] pl-4 md:pl-6">

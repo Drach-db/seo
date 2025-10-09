@@ -3,8 +3,8 @@ import { Clock, Calendar, ChevronRight, Hash, FileText, Briefcase } from "lucide
 import Link from "next/link"
 
 interface ArticleHeaderProps {
-  title: string
-  author: {
+  title?: string
+  author?: {
     name: string
     initials?: string
     avatar?: string
@@ -16,8 +16,9 @@ interface ArticleHeaderProps {
     niche?: string // e.g., "SEO", "Marketing", "Sales"
     type?: "article" | "case" // Article or Case Study
   }
-  readTime: string
-  publishDate: string
+  readTime?: string
+  publishDate?: string
+  rawHtml?: string
   className?: string
 }
 
@@ -36,8 +37,12 @@ export function ArticleHeader({
   },
   readTime,
   publishDate,
+  rawHtml,
   className
 }: ArticleHeaderProps) {
+  if (rawHtml) {
+    return <div dangerouslySetInnerHTML={{ __html: rawHtml }} />
+  }
   return (
     <header className={cn("w-full bg-slate-900 relative overflow-hidden pt-20 md:pt-24 lg:pt-28 pb-16", className)}>
       {/* Decorative Geometric Elements */}

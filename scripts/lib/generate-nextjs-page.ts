@@ -27,10 +27,18 @@ export function generateNextJsPage(
       for (const screen of group) {
         const componentName = artifactToComponentName(screen.artifact);
         componentImports.add(componentName);
-        const rawAttrs = parseDataAttributes(screen.body);
-        const props = adaptProps(screen.artifact, rawAttrs);
-        const propsString = generatePropsString(props);
-        componentUsages.push(`  <${componentName} ${propsString} />`);
+
+        // Если body содержит HTML (начинается с <), передаем как rawHtml
+        if (screen.body && screen.body.trim().startsWith('<')) {
+          const escapedHtml = escapeBackticks(screen.body);
+          componentUsages.push(`  <${componentName} rawHtml={\`${escapedHtml}\`} />`);
+        } else {
+          // Иначе парсим data-атрибуты как раньше
+          const rawAttrs = parseDataAttributes(screen.body);
+          const props = adaptProps(screen.artifact, rawAttrs);
+          const propsString = generatePropsString(props);
+          componentUsages.push(`  <${componentName} ${propsString} />`);
+        }
       }
     } else {
       // Группа с другими компонентами - оборачиваем в DecorativeBackground
@@ -46,10 +54,18 @@ export function generateNextJsPage(
 
         const componentName = artifactToComponentName(screen.artifact);
         componentImports.add(componentName);
-        const rawAttrs = parseDataAttributes(screen.body);
-        const props = adaptProps(screen.artifact, rawAttrs);
-        const propsString = generatePropsString(props);
-        groupComponents.push(`    <${componentName} ${propsString} />`);
+
+        // Если body содержит HTML (начинается с <), передаем как rawHtml
+        if (screen.body && screen.body.trim().startsWith('<')) {
+          const escapedHtml = escapeBackticks(screen.body);
+          groupComponents.push(`    <${componentName} rawHtml={\`${escapedHtml}\`} />`);
+        } else {
+          // Иначе парсим data-атрибуты как раньше
+          const rawAttrs = parseDataAttributes(screen.body);
+          const props = adaptProps(screen.artifact, rawAttrs);
+          const propsString = generatePropsString(props);
+          groupComponents.push(`    <${componentName} ${propsString} />`);
+        }
       }
 
       // Оборачиваем группу в DecorativeBackground
