@@ -8,11 +8,10 @@ interface H1Props {
 
 export function H1({ text, rawHtml, className }: H1Props) {
   if (rawHtml) {
-    return (
-      <div className={cn("max-w-6xl mx-auto px-4 sm:px-6 lg:px-8", className)}>
-        <div dangerouslySetInnerHTML={{ __html: rawHtml }} />
-      </div>
-    )
+    // Извлекаем текст из microdata
+    const match = rawHtml.match(/itemprop="headline"[^>]*>([^<]+)</i);
+    const extractedText = match ? match[1].trim() : text;
+    text = extractedText;
   }
 
   return (

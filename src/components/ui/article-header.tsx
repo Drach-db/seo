@@ -40,8 +40,33 @@ export function ArticleHeader({
   rawHtml,
   className
 }: ArticleHeaderProps) {
+  // Если есть rawHtml, парсим microdata из него
   if (rawHtml) {
-    return <div dangerouslySetInnerHTML={{ __html: rawHtml }} />
+    // Простой парсинг через regex (работает на сервере)
+    const extractValue = (prop: string) => {
+      const match = rawHtml.match(new RegExp(`itemprop="${prop}"[^>]*>([^<]+)<`, 'i'));
+      return match ? match[1].trim() : null;
+    };
+
+    const extractAttr = (prop: string, attr: string) => {
+      const match = rawHtml.match(new RegExp(`itemprop="${prop}"[^>]*${attr}="([^"]+)"`, 'i'));
+      return match ? match[1] : null;
+    };
+
+    // Извлекаем данные
+    const extractedTitle = extractValue('headline') || title;
+    const authorName = extractValue('name');
+    const authorImage = extractAttr('image', 'src');
+    const date = extractValue('datePublished');
+    const time = extractValue('timeRequired');
+
+    // Применяем
+    title = extractedTitle;
+    if (authorName) {
+      author = { name: authorName, avatar: authorImage || undefined };
+    }
+    publishDate = date || publishDate;
+    readTime = time || readTime;
   }
   return (
     <header className={cn("w-full bg-slate-900 relative overflow-hidden pt-20 md:pt-24 lg:pt-28 pb-16", className)}>

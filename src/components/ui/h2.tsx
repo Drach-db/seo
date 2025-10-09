@@ -8,11 +8,10 @@ interface H2Props {
 
 export function H2({ text, rawHtml, className }: H2Props) {
   if (rawHtml) {
-    return (
-      <div className={cn("max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-3 md:mt-4", className)}>
-        <div dangerouslySetInnerHTML={{ __html: rawHtml }} />
-      </div>
-    )
+    // Извлекаем текст из microdata
+    const match = rawHtml.match(/itemprop="text"[^>]*>([^<]+)</i);
+    const extractedText = match ? match[1].trim() : text;
+    text = extractedText;
   }
 
   return (
