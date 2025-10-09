@@ -7,9 +7,9 @@ interface H2Props {
 
 export function H2({ text, className }: H2Props) {
   return (
-    <div className={cn("max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 md:mt-8", className)}>
-      <div className="border-l-4 border-[#D67049] pl-4 md:pl-6">
-        <h2 className="text-2xl md:text-3xl lg:text-4xl font-normal text-gray-700 leading-relaxed">
+    <div className={cn("max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-3 md:mt-4", className)}>
+      <div className="border-l-3 border-[#D67049] pl-4 md:pl-6">
+        <h2 className="text-lg md:text-xl lg:text-2xl font-normal text-gray-600 leading-relaxed">
           {text}
         </h2>
       </div>
