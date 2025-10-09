@@ -14,8 +14,8 @@ export default function Page() {
     <>
   <ArticleHeader title="Полное руководство по SEO в 2025" author={JSON.parse("{\"name\":\"Иван Петров\",\"avatar\":\"/avatars/ivan.jpg\"}")} tags={JSON.parse("{\"niche\":\"SEO\",\"type\":\"case\"}")} readTime="8 мин чтения" publishDate="15 января 2025" />
   <DecorativeBackground className="py-16 md:py-20 lg:py-24">
-    <H1 text="Твой заголовок H1" />
-    <H2 text="Твой заголовок H2" />
+    <H1 text="Intrudlf" />
+    <H2 text="offset pppp" />
   </DecorativeBackground>
     </>
   );
