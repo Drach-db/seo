@@ -25,20 +25,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Create Google credentials file
-        run: |
-          echo '${{ secrets.GOOGLE_CREDENTIALS }}' > credentials.json
-
       - name: Generate pages from Google Sheets
         run: npm run generate
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: credentials.json
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
       - name: Build static site
         run: npm run build
-
-      - name: Clean up credentials
-        run: rm -f credentials.json
 
       - name: Commit and push changes
         run: |
