@@ -1,0 +1,48 @@
+name: Rebuild SEO Pages
+
+on:
+  # Триггер через API из Google Sheets
+  repository_dispatch:
+    types: [rebuild-pages]
+
+  # Можно также запускать вручную из GitHub UI
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create Google credentials file
+        run: |
+          echo '${{ secrets.GOOGLE_CREDENTIALS }}' > credentials.json
+
+      - name: Generate pages from Google Sheets
+        run: npm run generate
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: credentials.json
+
+      - name: Build static site
+        run: npm run build
+
+      - name: Clean up credentials
+        run: rm -f credentials.json
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add src/app/seo-pages/
+          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Auto: Rebuild pages from Google Sheets" && git push)
