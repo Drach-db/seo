@@ -67,8 +67,8 @@ export function generateNextJsPage(
         groupComponents.push(`      <${componentName} rawHtml={\`${escapedHtml}\`} />`);
       }
 
-      // Оборачиваем группу в DecorativeBackground
-      componentUsages.push(`    <DecorativeBackground className="py-16 md:py-20 lg:py-24">`);
+      // Оборачиваем группу в DecorativeBackground с минимальными отступами
+      componentUsages.push(`    <DecorativeBackground className="py-8 md:py-10 lg:py-12">`);
       componentUsages.push(...groupComponents);
       componentUsages.push(`    </DecorativeBackground>`);
 
