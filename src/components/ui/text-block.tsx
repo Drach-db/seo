@@ -384,7 +384,7 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
   }
 
   return (
-    <div className={cn("max-w-4xl mx-auto px-6 pb-8 pt-4 bg-[#FDFCFA] rounded-2xl", className)}>
+    <div className={cn("max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 pt-4 bg-[#FDFCFA] rounded-2xl", className)}>
       {renderContent()}
     </div>
   )

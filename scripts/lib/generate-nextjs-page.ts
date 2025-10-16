@@ -17,6 +17,7 @@ export function generateNextJsPage(
   componentImports.add('DecorativeBackground'); // Всегда добавляем DecorativeBackground
 
   const componentUsages: string[] = [];
+  let isFirstScreen = true;
 
   for (const group of screenGroups) {
     // Получаем screen_type из первого элемента группы
@@ -68,7 +69,11 @@ export function generateNextJsPage(
       }
 
       // Оборачиваем группу в DecorativeBackground с минимальными отступами
-      componentUsages.push(`    <DecorativeBackground className="py-8 md:py-10 lg:py-12">`);
+      // Первый экран получает дополнительный верхний отступ для шапки
+      const paddingClass = isFirstScreen
+        ? "pt-24 md:pt-28 lg:pt-32 pb-8 md:pb-10 lg:pb-12"
+        : "py-8 md:py-10 lg:py-12";
+      componentUsages.push(`    <DecorativeBackground className="${paddingClass}">`);
       componentUsages.push(...groupComponents);
       componentUsages.push(`    </DecorativeBackground>`);
 
@@ -76,6 +81,8 @@ export function generateNextJsPage(
       if (schemaUrl) {
         componentUsages.push(`  </${tag}>`);
       }
+
+      isFirstScreen = false;
     }
   }
 

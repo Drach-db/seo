@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <>
-    <DecorativeBackground className="py-8 md:py-10 lg:py-12">
+    <DecorativeBackground className="pt-24 md:pt-28 lg:pt-32 pb-8 md:pb-10 lg:pb-12">
       <H1 rawHtml={`Seasonal Surge Chaos, PODs, and Claims: logistics operational challenges`} />
       <TextBlock rawHtml={`###Client: /n Logistics company; Auckland, New Zealand /n ###Service: /n 21 agents (10 Front/11 Back Office) + 40% elastic  buffer at 50% cost /n ###Results: /n Response time ↓60% CSAT 4.7 | Accuracy 99.4% POD cycle ↓50% Zero downtime`} />
     </DecorativeBackground>
