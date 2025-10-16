@@ -42,23 +42,104 @@ export function ArticleHeader({
 }: ArticleHeaderProps) {
   // Если есть rawHtml, парсим microdata из него
   if (rawHtml) {
-    // Простой парсинг через regex (работает на сервере)
-    const extractValue = (prop: string) => {
-      const match = rawHtml.match(new RegExp(`itemprop="${prop}"[^>]*>([^<]+)<`, 'i'));
-      return match ? match[1].trim() : null;
+    // Маппинг screen_type → названия свойств Schema.org
+    const getSchemaProps = (html: string) => {
+      const typeMatch = html.match(/itemtype="https:\/\/schema\.org\/([^"]+)"/i);
+      const schemaType = typeMatch ? typeMatch[1].toLowerCase() : '';
+
+      const propsMap: Record<string, { title: string[]; author: string[]; authorImage: string[]; date: string[]; time: string[] }> = {
+        'service': {
+          title: ['name', 'headline'],
+          author: ['provider', 'author'],
+          authorImage: ['logo', 'image'],
+          date: ['availableAtOrFrom', 'datePublished'],
+          time: ['duration', 'timeRequired']
+        },
+        'product': {
+          title: ['name', 'headline'],
+          author: ['brand', 'manufacturer', 'author'],
+          authorImage: ['logo', 'image'],
+          date: ['releaseDate', 'datePublished'],
+          time: ['timeRequired']
+        },
+        'faqpage': {
+          title: ['name', 'headline'],
+          author: ['author'],
+          authorImage: ['image'],
+          date: ['datePublished'],
+          time: ['timeRequired']
+        },
+        'question': {
+          title: ['name', 'text', 'headline'],
+          author: ['author'],
+          authorImage: ['image'],
+          date: ['dateCreated', 'datePublished'],
+          time: ['timeRequired']
+        },
+        'howto': {
+          title: ['name', 'headline'],
+          author: ['author'],
+          authorImage: ['image'],
+          date: ['datePublished'],
+          time: ['totalTime', 'timeRequired']
+        },
+        'localbusiness': {
+          title: ['name', 'legalName'],
+          author: ['employee', 'founder', 'author'],
+          authorImage: ['logo', 'image'],
+          date: ['foundingDate', 'datePublished'],
+          time: ['openingHours', 'timeRequired']
+        },
+        'organization': {
+          title: ['name', 'legalName'],
+          author: ['founder', 'employee', 'author'],
+          authorImage: ['logo', 'image'],
+          date: ['foundingDate', 'datePublished'],
+          time: ['timeRequired']
+        },
+        'itemlist': {
+          title: ['name', 'headline'],
+          author: ['author'],
+          authorImage: ['image'],
+          date: ['datePublished'],
+          time: ['timeRequired']
+        },
+      };
+
+      return propsMap[schemaType] || {
+        title: ['headline', 'name'],
+        author: ['author', 'name'],
+        authorImage: ['image'],
+        date: ['datePublished'],
+        time: ['timeRequired']
+      };
     };
 
-    const extractAttr = (prop: string, attr: string) => {
-      const match = rawHtml.match(new RegExp(`itemprop="${prop}"[^>]*${attr}="([^"]+)"`, 'i'));
-      return match ? match[1] : null;
+    // Простой парсинг через regex (работает на сервере)
+    const extractValue = (props: string[]) => {
+      for (const prop of props) {
+        const match = rawHtml.match(new RegExp(`itemprop="${prop}"[^>]*>([^<]+)<`, 'i'));
+        if (match) return match[1].trim();
+      }
+      return null;
     };
+
+    const extractAttr = (props: string[], attr: string) => {
+      for (const prop of props) {
+        const match = rawHtml.match(new RegExp(`itemprop="${prop}"[^>]*${attr}="([^"]+)"`, 'i'));
+        if (match) return match[1];
+      }
+      return null;
+    };
+
+    const schemaProps = getSchemaProps(rawHtml);
 
     // Извлекаем данные
-    const extractedTitle = extractValue('headline') || title;
-    const authorName = extractValue('name');
-    const authorImage = extractAttr('image', 'src');
-    const date = extractValue('datePublished');
-    const time = extractValue('timeRequired');
+    const extractedTitle = extractValue(schemaProps.title);
+    const authorName = extractValue(schemaProps.author);
+    const authorImage = extractAttr(schemaProps.authorImage, 'src');
+    const date = extractValue(schemaProps.date);
+    const time = extractValue(schemaProps.time);
 
     // Применяем извлечённые значения
     if (extractedTitle) title = extractedTitle;
