@@ -46,12 +46,22 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
         continue
       }
 
-      // Заголовки
-      if (line.startsWith('# ')) {
+      // Заголовки (с пробелом или без)
+      if (line.startsWith('### ')) {
         elements.push(
-          <h1 key={i} className="text-4xl font-bold text-gray-900 mt-8 mb-4 leading-tight">
-            {parseInlineMarkup(line.substring(2))}
-          </h1>
+          <h3 key={i} className="text-2xl font-semibold text-gray-800 mt-5 mb-2 leading-normal">
+            {parseInlineMarkup(line.substring(4))}
+          </h3>
+        )
+        i++
+        continue
+      }
+
+      if (line.startsWith('###')) {
+        elements.push(
+          <h3 key={i} className="text-2xl font-semibold text-gray-800 mt-5 mb-2 leading-normal">
+            {parseInlineMarkup(line.substring(3))}
+          </h3>
         )
         i++
         continue
@@ -67,11 +77,31 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
         continue
       }
 
-      if (line.startsWith('### ')) {
+      if (line.startsWith('##')) {
         elements.push(
-          <h3 key={i} className="text-2xl font-semibold text-gray-800 mt-5 mb-2 leading-normal">
-            {parseInlineMarkup(line.substring(4))}
-          </h3>
+          <h2 key={i} className="text-3xl font-semibold text-gray-900 mt-6 mb-3 leading-snug">
+            {parseInlineMarkup(line.substring(2))}
+          </h2>
+        )
+        i++
+        continue
+      }
+
+      if (line.startsWith('# ')) {
+        elements.push(
+          <h1 key={i} className="text-4xl font-bold text-gray-900 mt-8 mb-4 leading-tight">
+            {parseInlineMarkup(line.substring(2))}
+          </h1>
+        )
+        i++
+        continue
+      }
+
+      if (line.startsWith('#')) {
+        elements.push(
+          <h1 key={i} className="text-4xl font-bold text-gray-900 mt-8 mb-4 leading-tight">
+            {parseInlineMarkup(line.substring(1))}
+          </h1>
         )
         i++
         continue
