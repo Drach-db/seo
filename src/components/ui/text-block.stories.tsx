@@ -15,7 +15,7 @@ type Story = StoryObj<typeof meta>;
 
 export const AllFeatures: Story = {
   args: {
-    content: `# Заголовок первого уровня
+    rawHtml: `# Заголовок первого уровня
 
 Это обычный параграф с **жирным текстом**, *курсивом*, \`инлайн кодом\`, ~~зачеркнутым текстом~~ и [ссылкой](https://example.com).
 
@@ -72,7 +72,7 @@ export const AllFeatures: Story = {
 
 export const BasicText: Story = {
   args: {
-    content: `# Простой пример
+    rawHtml: `# Простой пример
 
 Это обычный текст с **жирным**, *курсивом* и \`кодом\`.
 
@@ -82,7 +82,7 @@ export const BasicText: Story = {
 
 export const Lists: Story = {
   args: {
-    content: `# Примеры списков
+    rawHtml: `# Примеры списков
 
 ## Маркированный список
 
@@ -100,7 +100,7 @@ export const Lists: Story = {
 
 export const Quote: Story = {
   args: {
-    content: `# Цитаты
+    rawHtml: `# Цитаты
 
 > "Дизайн - это не только то, как выглядит и ощущается продукт.
 > Дизайн - это то, как он работает."
@@ -112,7 +112,7 @@ export const Quote: Story = {
 
 export const Callout: Story = {
   args: {
-    content: `# Callout пример
+    rawHtml: `# Callout пример
 
 [callout]
 The TL;DR
@@ -130,7 +130,7 @@ Build your startup like you're building a globally distributed company from day 
 
 export const Table: Story = {
   args: {
-    content: `# Таблица данных
+    rawHtml: `# Таблица данных
 
 [table]
 | Название | Описание | Статус |
@@ -145,7 +145,7 @@ export const Table: Story = {
 
 export const Image: Story = {
   args: {
-    content: `# Пример с изображением
+    rawHtml: `# Пример с изображением
 
 Текст перед изображением.
 
@@ -157,7 +157,7 @@ export const Image: Story = {
 
 export const MixedContent: Story = {
   args: {
-    content: `# Комплексный пример
+    rawHtml: `# Комплексный пример
 
 Начнем с обычного параграфа, который содержит **жирный текст**, *курсив*, и \`код\`.
 
@@ -191,7 +191,7 @@ export const MixedContent: Story = {
 
 export const LongArticle: Story = {
   args: {
-    content: `# Полное руководство по Schema.org
+    rawHtml: `# Полное руководство по Schema.org
 
 ## Введение
 

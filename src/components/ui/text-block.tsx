@@ -1,8 +1,9 @@
+import React from "react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 
 interface TextBlockProps {
-  content: string
+  rawHtml: string
   className?: string
 }
 
@@ -24,7 +25,10 @@ interface TextBlockProps {
  * - [callout]content[/callout] - выноска
  * - [table]...[/table] - таблица
  */
-export function TextBlock({ content, className }: TextBlockProps) {
+export function TextBlock({ rawHtml, className }: TextBlockProps) {
+  // Защита от undefined/null
+  const content = rawHtml || '';
+
   const renderContent = () => {
     const lines = content.split('\n')
     const elements: JSX.Element[] = []
@@ -361,7 +365,10 @@ function parseInlineMarkup(text: string): React.ReactNode {
   let remaining = text
   let key = 0
 
-  const patterns = [
+  const patterns: Array<{
+    regex: RegExp;
+    render: (...args: string[]) => React.ReactNode;
+  }> = [
     { regex: /\*\*(.+?)\*\*/g, render: (match: string) => <strong key={key++} className="font-semibold text-gray-900">{match}</strong> },
     { regex: /\*(.+?)\*/g, render: (match: string) => <em key={key++} className="italic">{match}</em> },
     { regex: /`(.+?)`/g, render: (match: string) => <code key={key++} className="px-1.5 py-0.5 bg-gray-100 text-pink-600 rounded text-sm font-mono">{match}</code> },
