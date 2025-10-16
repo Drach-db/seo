@@ -19,25 +19,44 @@ export function generateNextJsPage(
   const componentUsages: string[] = [];
 
   for (const group of screenGroups) {
+    // Получаем screen_type из первого элемента группы
+    const screenType = group[0]?.screen_type || '';
+    const { tag, schemaUrl } = getSchemaWrapper(screenType);
+
     // Если в группе только article_header - рендерим без DecorativeBackground
     const hasOnlyArticleHeader = group.every(s => s.artifact === 'article_header');
 
     if (hasOnlyArticleHeader) {
+      // Открываем Schema.org обёртку
+      if (schemaUrl) {
+        componentUsages.push(`  <${tag} itemScope itemType="${schemaUrl}">`);
+      }
+
       // Рендерим article_header без фона
       for (const screen of group) {
         const componentName = artifactToComponentName(screen.artifact);
         componentImports.add(componentName);
         const escapedHtml = escapeBackticks(screen.body);
-        componentUsages.push(`  <${componentName} rawHtml={\`${escapedHtml}\`} />`);
+        componentUsages.push(`    <${componentName} rawHtml={\`${escapedHtml}\`} />`);
+      }
+
+      // Закрываем Schema.org обёртку
+      if (schemaUrl) {
+        componentUsages.push(`  </${tag}>`);
       }
     } else {
+      // Открываем Schema.org обёртку
+      if (schemaUrl) {
+        componentUsages.push(`  <${tag} itemScope itemType="${schemaUrl}">`);
+      }
+
       // Группа с другими компонентами - оборачиваем в DecorativeBackground
       const groupComponents: string[] = [];
 
       for (const screen of group) {
         if (!screen.artifact) {
           if (screen.body) {
-            groupComponents.push(`    <div dangerouslySetInnerHTML={{ __html: \`${escapeBackticks(screen.body)}\` }} />`);
+            groupComponents.push(`      <div dangerouslySetInnerHTML={{ __html: \`${escapeBackticks(screen.body)}\` }} />`);
           }
           continue;
         }
@@ -45,13 +64,18 @@ export function generateNextJsPage(
         const componentName = artifactToComponentName(screen.artifact);
         componentImports.add(componentName);
         const escapedHtml = escapeBackticks(screen.body);
-        groupComponents.push(`    <${componentName} rawHtml={\`${escapedHtml}\`} />`);
+        groupComponents.push(`      <${componentName} rawHtml={\`${escapedHtml}\`} />`);
       }
 
       // Оборачиваем группу в DecorativeBackground
-      componentUsages.push(`  <DecorativeBackground className="py-16 md:py-20 lg:py-24">`);
+      componentUsages.push(`    <DecorativeBackground className="py-16 md:py-20 lg:py-24">`);
       componentUsages.push(...groupComponents);
-      componentUsages.push(`  </DecorativeBackground>`);
+      componentUsages.push(`    </DecorativeBackground>`);
+
+      // Закрываем Schema.org обёртку
+      if (schemaUrl) {
+        componentUsages.push(`  </${tag}>`);
+      }
     }
   }
 
@@ -83,6 +107,24 @@ ${componentUsages.join('\n')}
 }
 
 /**
+ * Преобразует screen_type в HTML тег и Schema.org URL
+ */
+function getSchemaWrapper(screenType: string): { tag: string; schemaUrl: string } {
+  const mapping: Record<string, { tag: string; schemaUrl: string }> = {
+    'service': { tag: 'div', schemaUrl: 'https://schema.org/Service' },
+    'product': { tag: 'div', schemaUrl: 'https://schema.org/Product' },
+    'faq': { tag: 'div', schemaUrl: 'https://schema.org/FAQPage' },
+    'question': { tag: 'div', schemaUrl: 'https://schema.org/Question' },
+    'how_to': { tag: 'div', schemaUrl: 'https://schema.org/HowTo' },
+    'local_business': { tag: 'div', schemaUrl: 'https://schema.org/LocalBusiness' },
+    'organization': { tag: 'div', schemaUrl: 'https://schema.org/Organization' },
+    'Item_list': { tag: 'div', schemaUrl: 'https://schema.org/ItemList' },
+  };
+
+  return mapping[screenType] || { tag: 'div', schemaUrl: '' };
+}
+
+/**
  * Группирует screens по screen_id
  */
 function groupByScreenId(screens: ScreenData[]): ScreenData[][] {
@@ -105,8 +147,19 @@ function groupByScreenId(screens: ScreenData[]): ScreenData[][] {
 /**
  * Преобразует artifact название в имя компонента
  * article_header -> ArticleHeader
+ * text -> TextBlock
  */
 function artifactToComponentName(artifact: string): string {
+  // Специальные маппинги для артефактов
+  const specialMappings: Record<string, string> = {
+    'text': 'TextBlock',
+  };
+
+  if (specialMappings[artifact]) {
+    return specialMappings[artifact];
+  }
+
+  // Стандартное преобразование: article_header -> ArticleHeader
   return artifact
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -116,8 +169,19 @@ function artifactToComponentName(artifact: string): string {
 /**
  * Преобразует имя компонента в имя файла
  * ArticleHeader -> article-header
+ * TextBlock -> text-block
  */
 function componentNameToFileName(componentName: string): string {
+  // Специальные маппинги для файлов компонентов
+  const specialMappings: Record<string, string> = {
+    'TextBlock': 'text-block',
+  };
+
+  if (specialMappings[componentName]) {
+    return specialMappings[componentName];
+  }
+
+  // Стандартное преобразование: ArticleHeader -> article-header
   return componentName
     .replace(/([A-Z])/g, '-$1')
     .toLowerCase()
