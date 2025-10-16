@@ -29,8 +29,11 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
   // Защита от undefined/null
   const content = rawHtml || '';
 
+  // Заменяем /n на реальные переносы строк
+  const normalizedContent = content.replace(/\/n/g, '\n');
+
   const renderContent = () => {
-    const lines = content.split('\n')
+    const lines = normalizedContent.split('\n')
     const elements: JSX.Element[] = []
     let i = 0
 
