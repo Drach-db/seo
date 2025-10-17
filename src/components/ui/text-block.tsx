@@ -185,8 +185,9 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
 
         while (i < lines.length) {
           if (currentLine.includes('[/callout]')) {
-            const cleaned = currentLine.replace('[/callout]', '').trim()
-            if (cleaned) calloutContent.push(cleaned)
+            // Извлекаем только контент до [/callout]
+            const beforeClosing = currentLine.split('[/callout]')[0].trim()
+            if (beforeClosing) calloutContent.push(beforeClosing)
             i++
             break
           }
@@ -332,8 +333,9 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
 
         while (i < lines.length) {
           if (currentLine.includes('[/table]')) {
-            const cleaned = currentLine.replace('[/table]', '').trim()
-            if (cleaned) tableLines.push(cleaned)
+            // Извлекаем только контент до [/table]
+            const beforeClosing = currentLine.split('[/table]')[0].trim()
+            if (beforeClosing) tableLines.push(beforeClosing)
             i++
             break
           }
