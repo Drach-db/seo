@@ -421,11 +421,35 @@ function parseRichContent(
       continue
     }
 
-    // Divider
-    if (contentLine === '---') {
+    // Divider - может быть как отдельная строка "---" или в конце текста "text ---"
+    if (contentLine.includes('---')) {
+      const parts = contentLine.split('---')
+      const textBefore = parts[0].trim()
+
+      // Если есть текст до ---, рендерим его
+      if (textBefore) {
+        elements.push(
+          <p key={`${j}-text`} className={`${colors.text} leading-relaxed mb-2`}>
+            {parseInlineMarkup(textBefore)}
+          </p>
+        )
+      }
+
+      // Рендерим divider
       elements.push(
-        <hr key={j} className={`my-4 border-t ${colors.border}`} />
+        <hr key={`${j}-divider`} className={`my-4 border-t ${colors.border}`} />
       )
+
+      // Если после --- есть ещё текст, рендерим его
+      const textAfter = parts.slice(1).join('---').trim()
+      if (textAfter) {
+        elements.push(
+          <p key={`${j}-after`} className={`${colors.text} leading-relaxed mb-2`}>
+            {parseInlineMarkup(textAfter)}
+          </p>
+        )
+      }
+
       j++
       continue
     }
