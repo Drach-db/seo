@@ -116,8 +116,137 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
         continue
       }
 
-      // Quote (цитата) - с пробелом или без
-      if (line.startsWith('> ') || line.startsWith('>')) {
+      // Quote with closing tag (цитата с закрывающим тегом) - >content<
+      if (line.startsWith('>') && !line.startsWith('>>')) {
+        // Проверяем, есть ли закрывающий тег < в строке или дальше
+        const quoteContent: string[] = []
+        let currentLine = line.substring(1).trim() // Убираем открывающий >
+
+        while (i < lines.length) {
+          if (currentLine.includes('<')) {
+            // Извлекаем только контент до <
+            const parts = currentLine.split('<')
+            const beforeClosing = parts[0].trim()
+            if (beforeClosing) quoteContent.push(beforeClosing)
+
+            // Если после < есть ещё контент, вставляем его обратно
+            const afterClosing = parts.slice(1).join('<').trim()
+            if (afterClosing) {
+              lines.splice(i + 1, 0, afterClosing)
+            }
+            i++
+            break
+          }
+          if (currentLine) quoteContent.push(currentLine)
+          i++
+          currentLine = lines[i]?.trim() || ''
+        }
+
+        // Рендерим quote контент с поддержкой всех элементов (как в callout)
+        const renderQuoteContent = () => {
+          const quoteElements: React.ReactNode[] = []
+          let j = 0
+
+          while (j < quoteContent.length) {
+            const contentLine = quoteContent[j]
+
+            // H3 в цитате
+            if (contentLine.includes('###')) {
+              const parts = contentLine.split('###')
+              const textBefore = parts[0].trim()
+              const headingText = parts.slice(1).join('###').trim()
+
+              if (textBefore) {
+                quoteElements.push(
+                  <p key={`${j}-text`} className="text-gray-700 leading-relaxed mb-2">
+                    {parseInlineMarkup(textBefore)}
+                  </p>
+                )
+              }
+
+              if (headingText) {
+                quoteElements.push(
+                  <h3 key={`${j}-h3`} className="text-xl font-semibold text-gray-800 mt-4 mb-2 first:mt-0">
+                    {parseInlineMarkup(headingText)}
+                  </h3>
+                )
+              }
+
+              j++
+              continue
+            }
+
+            // Divider в цитате
+            if (contentLine === '---') {
+              quoteElements.push(
+                <hr key={j} className="my-4 border-t border-purple-300/30" />
+              )
+              j++
+              continue
+            }
+
+            // Списки в цитате
+            if (contentLine.startsWith('- ') || contentLine.startsWith('* ')) {
+              const listItems = []
+              while (j < quoteContent.length && (quoteContent[j].startsWith('- ') || quoteContent[j].startsWith('* '))) {
+                listItems.push(quoteContent[j].substring(2))
+                j++
+              }
+              quoteElements.push(
+                <ul key={j} className="my-2 space-y-1.5">
+                  {listItems.map((item, idx) => (
+                    <li key={idx} className="text-gray-700 leading-relaxed flex gap-3">
+                      <span className="text-gray-700 text-2xl leading-none flex items-center h-[1.5rem]">•</span>
+                      <span className="flex-1">{parseInlineMarkup(item)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )
+              continue
+            }
+
+            // Нумерованные списки в цитате
+            if (/^\d+\.\s/.test(contentLine)) {
+              const listItems = []
+              while (j < quoteContent.length && /^\d+\.\s/.test(quoteContent[j])) {
+                listItems.push(quoteContent[j].replace(/^\d+\.\s/, ''))
+                j++
+              }
+              quoteElements.push(
+                <ol key={j} className="my-2 space-y-1.5">
+                  {listItems.map((item, idx) => (
+                    <li key={idx} className="text-gray-700 leading-relaxed flex items-start gap-2">
+                      <span className="text-gray-700 font-medium min-w-[1.5rem]">{idx + 1}.</span>
+                      <span className="flex-1">{parseInlineMarkup(item)}</span>
+                    </li>
+                  ))}
+                </ol>
+              )
+              continue
+            }
+
+            // Обычный текст
+            quoteElements.push(
+              <p key={j} className="text-gray-700 leading-relaxed mb-2 last:mb-0">
+                {parseInlineMarkup(contentLine)}
+              </p>
+            )
+            j++
+          }
+
+          return quoteElements
+        }
+
+        elements.push(
+          <blockquote key={i} className="border-l-4 border-purple-300 pl-6 py-3 my-4 text-gray-700 italic bg-purple-50/60 rounded-r">
+            {renderQuoteContent()}
+          </blockquote>
+        )
+        continue
+      }
+
+      // Quote (цитата) - старый синтаксис с > в начале каждой строки (для обратной совместимости)
+      if (line.startsWith('> ') || line.startsWith('>>')) {
         const quoteLines = []
         while (i < lines.length && (lines[i].trim().startsWith('> ') || lines[i].trim().startsWith('>'))) {
           const trimmed = lines[i].trim()
@@ -211,16 +340,31 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
           while (j < calloutContent.length) {
             const contentLine = calloutContent[j]
 
-            // Заголовки H3 в callout (с пробелом или без, с цифрой впереди или без)
-            // Поддерживает: "### Title", "###Title", "1 ### Title", "1 ###Title"
-            const h3Match = contentLine.match(/^(\d+\s+)?###\s?(.+)$/)
-            if (h3Match) {
-              const title = h3Match[2]
-              calloutElements.push(
-                <h3 key={j} className="text-xl font-semibold text-[#1e3a5f] mt-4 mb-2 first:mt-0">
-                  {parseInlineMarkup(title)}
-                </h3>
-              )
+            // Заголовки H3 в callout - разделяем текст до ### и заголовок после ###
+            // Пример: "4 ### The London" → "4 " (текст) + "The London" (заголовок)
+            if (contentLine.includes('###')) {
+              const parts = contentLine.split('###')
+              const textBefore = parts[0].trim()
+              const headingText = parts.slice(1).join('###').trim()
+
+              // Если есть текст до ###, рендерим его как обычный параграф
+              if (textBefore) {
+                calloutElements.push(
+                  <p key={`${j}-text`} className="text-[#1e3a5f] leading-relaxed mb-2">
+                    {parseInlineMarkup(textBefore)}
+                  </p>
+                )
+              }
+
+              // Рендерим заголовок
+              if (headingText) {
+                calloutElements.push(
+                  <h3 key={`${j}-h3`} className="text-xl font-semibold text-[#1e3a5f] mt-4 mb-2 first:mt-0">
+                    {parseInlineMarkup(headingText)}
+                  </h3>
+                )
+              }
+
               j++
               continue
             }
