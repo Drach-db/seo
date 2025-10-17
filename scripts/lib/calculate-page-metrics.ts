@@ -26,7 +26,7 @@ export interface PageMetrics {
  * Вычисляет метрики для страницы
  */
 export function calculatePageMetrics(pageName: string): PageMetrics | null {
-  const htmlPath = path.join(process.cwd(), 'out', 'seo-pages', `${pageName}.html`);
+  const htmlPath = path.join(process.cwd(), 'out', 'blog', `${pageName}.html`);
 
   if (!fs.existsSync(htmlPath)) {
     console.warn(`⚠️  HTML файл не найден: ${htmlPath}`);

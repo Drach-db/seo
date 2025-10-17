@@ -4,7 +4,7 @@ import { readGoogleSheets, groupScreensByPage } from './lib/sheets-reader';
 import { generateNextJsPage } from './lib/generate-nextjs-page';
 import { generateLayout } from './lib/generate-layout';
 
-const PAGES_DIR = path.join(process.cwd(), 'src', 'app', 'seo-pages');
+const PAGES_DIR = path.join(process.cwd(), 'src', 'app', 'blog');
 
 /**
  * Основная функция генерации страниц

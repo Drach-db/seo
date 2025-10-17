@@ -15,7 +15,7 @@ npx tsx scripts/update-file-sizes.ts
 # Копируем только SEO страницы + статику
 mkdir -p "$SEO_OUT"
 cp -r out/_next "$SEO_OUT/"
-cp -r out/seo-pages "$SEO_OUT/"
+cp -r out/blog "$SEO_OUT/"
 cp out/logo*.svg "$SEO_OUT/" 2>/dev/null || true
 
 echo ""
