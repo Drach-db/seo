@@ -142,104 +142,9 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
           currentLine = lines[i]?.trim() || ''
         }
 
-        // Рендерим quote контент с поддержкой всех элементов (как в callout)
-        const renderQuoteContent = () => {
-          const quoteElements: React.ReactNode[] = []
-          let j = 0
-
-          while (j < quoteContent.length) {
-            const contentLine = quoteContent[j]
-
-            // H3 в цитате
-            if (contentLine.includes('###')) {
-              const parts = contentLine.split('###')
-              const textBefore = parts[0].trim()
-              const headingText = parts.slice(1).join('###').trim()
-
-              if (textBefore) {
-                quoteElements.push(
-                  <p key={`${j}-text`} className="text-gray-700 leading-relaxed mb-2">
-                    {parseInlineMarkup(textBefore)}
-                  </p>
-                )
-              }
-
-              if (headingText) {
-                quoteElements.push(
-                  <h3 key={`${j}-h3`} className="text-xl font-semibold text-gray-800 mt-4 mb-2 first:mt-0">
-                    {parseInlineMarkup(headingText)}
-                  </h3>
-                )
-              }
-
-              j++
-              continue
-            }
-
-            // Divider в цитате
-            if (contentLine === '---') {
-              quoteElements.push(
-                <hr key={j} className="my-4 border-t border-purple-300/30" />
-              )
-              j++
-              continue
-            }
-
-            // Списки в цитате
-            if (contentLine.startsWith('- ') || contentLine.startsWith('* ')) {
-              const listItems = []
-              while (j < quoteContent.length && (quoteContent[j].startsWith('- ') || quoteContent[j].startsWith('* '))) {
-                listItems.push(quoteContent[j].substring(2))
-                j++
-              }
-              quoteElements.push(
-                <ul key={j} className="my-2 space-y-1.5">
-                  {listItems.map((item, idx) => (
-                    <li key={idx} className="text-gray-700 leading-relaxed flex gap-3">
-                      <span className="text-gray-700 text-2xl leading-none flex items-center h-[1.5rem]">•</span>
-                      <span className="flex-1">{parseInlineMarkup(item)}</span>
-                    </li>
-                  ))}
-                </ul>
-              )
-              continue
-            }
-
-            // Нумерованные списки в цитате
-            if (/^\d+\.\s/.test(contentLine)) {
-              const listItems = []
-              while (j < quoteContent.length && /^\d+\.\s/.test(quoteContent[j])) {
-                listItems.push(quoteContent[j].replace(/^\d+\.\s/, ''))
-                j++
-              }
-              quoteElements.push(
-                <ol key={j} className="my-2 space-y-1.5">
-                  {listItems.map((item, idx) => (
-                    <li key={idx} className="text-gray-700 leading-relaxed flex items-start gap-2">
-                      <span className="text-gray-700 font-medium min-w-[1.5rem]">{idx + 1}.</span>
-                      <span className="flex-1">{parseInlineMarkup(item)}</span>
-                    </li>
-                  ))}
-                </ol>
-              )
-              continue
-            }
-
-            // Обычный текст
-            quoteElements.push(
-              <p key={j} className="text-gray-700 leading-relaxed mb-2 last:mb-0">
-                {parseInlineMarkup(contentLine)}
-              </p>
-            )
-            j++
-          }
-
-          return quoteElements
-        }
-
         elements.push(
           <blockquote key={i} className="border-l-4 border-purple-300 pl-6 py-3 my-4 text-gray-700 italic bg-purple-50/60 rounded-r">
-            {renderQuoteContent()}
+            {parseRichContent(quoteContent, 'quote')}
           </blockquote>
         )
         continue
@@ -332,126 +237,6 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
           currentLine = lines[i]?.trim() || ''
         }
 
-        // Рендерим callout контент с поддержкой всех элементов
-        const renderCalloutContent = () => {
-          const calloutElements: JSX.Element[] = []
-          let j = 0
-
-          while (j < calloutContent.length) {
-            const contentLine = calloutContent[j]
-
-            // Заголовки H3 в callout - разделяем текст до ### и заголовок после ###
-            // Пример: "4 ### The London" → "4 " (текст) + "The London" (заголовок)
-            if (contentLine.includes('###')) {
-              const parts = contentLine.split('###')
-              const textBefore = parts[0].trim()
-              const headingText = parts.slice(1).join('###').trim()
-
-              // Если есть текст до ###, рендерим его как обычный параграф
-              if (textBefore) {
-                calloutElements.push(
-                  <p key={`${j}-text`} className="text-[#1e3a5f] leading-relaxed mb-2">
-                    {parseInlineMarkup(textBefore)}
-                  </p>
-                )
-              }
-
-              // Рендерим заголовок
-              if (headingText) {
-                calloutElements.push(
-                  <h3 key={`${j}-h3`} className="text-xl font-semibold text-[#1e3a5f] mt-4 mb-2 first:mt-0">
-                    {parseInlineMarkup(headingText)}
-                  </h3>
-                )
-              }
-
-              j++
-              continue
-            }
-
-            // Divider в callout
-            if (contentLine === '---') {
-              calloutElements.push(
-                <hr key={j} className="my-4 border-t border-[#1e3a5f]/20" />
-              )
-              j++
-              continue
-            }
-
-            // Цитаты в callout
-            if (contentLine.startsWith('> ') || contentLine.startsWith('>')) {
-              const quoteLines = []
-              while (j < calloutContent.length && (calloutContent[j].startsWith('> ') || calloutContent[j].startsWith('>'))) {
-                const quoteLine = calloutContent[j]
-                if (quoteLine.startsWith('> ')) {
-                  quoteLines.push(quoteLine.substring(2))
-                } else if (quoteLine.startsWith('>')) {
-                  quoteLines.push(quoteLine.substring(1))
-                }
-                j++
-              }
-              calloutElements.push(
-                <blockquote key={j} className="border-l-4 border-[#1e3a5f]/40 pl-4 py-2 my-3 text-[#1e3a5f]/90 italic bg-[#1e3a5f]/5 rounded-r">
-                  {quoteLines.map((quoteLine, idx) => (
-                    <p key={idx} className="mb-1 last:mb-0 text-sm">{parseInlineMarkup(quoteLine)}</p>
-                  ))}
-                </blockquote>
-              )
-              continue
-            }
-
-            // Списки в callout
-            if (contentLine.startsWith('- ') || contentLine.startsWith('* ')) {
-              const listItems = []
-              while (j < calloutContent.length && (calloutContent[j].startsWith('- ') || calloutContent[j].startsWith('* '))) {
-                listItems.push(calloutContent[j].substring(2))
-                j++
-              }
-              calloutElements.push(
-                <ul key={j} className="my-2 space-y-1.5">
-                  {listItems.map((item, idx) => (
-                    <li key={idx} className="text-[#1e3a5f] leading-relaxed flex gap-3">
-                      <span className="text-[#1e3a5f] text-2xl leading-none flex items-center h-[1.5rem]">•</span>
-                      <span className="flex-1">{parseInlineMarkup(item)}</span>
-                    </li>
-                  ))}
-                </ul>
-              )
-              continue
-            }
-
-            // Нумерованные списки в callout
-            if (/^\d+\.\s/.test(contentLine)) {
-              const listItems = []
-              while (j < calloutContent.length && /^\d+\.\s/.test(calloutContent[j])) {
-                listItems.push(calloutContent[j].replace(/^\d+\.\s/, ''))
-                j++
-              }
-              calloutElements.push(
-                <ol key={j} className="my-2 space-y-1.5">
-                  {listItems.map((item, idx) => (
-                    <li key={idx} className="text-[#1e3a5f] leading-relaxed flex items-start gap-2">
-                      <span className="text-[#1e3a5f] font-medium min-w-[1.5rem]">{idx + 1}.</span>
-                      <span className="flex-1">{parseInlineMarkup(item)}</span>
-                    </li>
-                  ))}
-                </ol>
-              )
-              continue
-            }
-
-            // Обычный текст
-            calloutElements.push(
-              <p key={j} className="text-[#1e3a5f] leading-relaxed mb-2 last:mb-0">
-                {parseInlineMarkup(contentLine)}
-              </p>
-            )
-            j++
-          }
-
-          return calloutElements
-        }
-
         elements.push(
           <div key={i} className="bg-[#e8f0f7] rounded-lg p-6 my-6">
             <div className="flex items-start gap-4">
@@ -462,7 +247,7 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
-                {renderCalloutContent()}
+                {parseRichContent(calloutContent, 'callout')}
               </div>
             </div>
           </div>
@@ -589,6 +374,141 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
       </div>
     </div>
   )
+}
+
+/**
+ * Парсит массив строк контента и возвращает React элементы
+ * Используется для парсинга контента внутри каллаутов и цитат
+ */
+function parseRichContent(
+  content: string[],
+  context: 'callout' | 'quote' = 'callout'
+): React.ReactNode[] {
+  const elements: React.ReactNode[] = []
+  let j = 0
+
+  // Цвета в зависимости от контекста
+  const colors = context === 'callout'
+    ? { text: 'text-[#1e3a5f]', heading: 'text-[#1e3a5f]', border: 'border-[#1e3a5f]/20', bgQuote: 'bg-[#1e3a5f]/5', borderQuote: 'border-[#1e3a5f]/40' }
+    : { text: 'text-gray-700', heading: 'text-gray-800', border: 'border-purple-300/30', bgQuote: 'bg-purple-50/30', borderQuote: 'border-purple-300/50' }
+
+  while (j < content.length) {
+    const contentLine = content[j]
+
+    // H3 - разделяем текст до ### и заголовок после ###
+    if (contentLine.includes('###')) {
+      const parts = contentLine.split('###')
+      const textBefore = parts[0].trim()
+      const headingText = parts.slice(1).join('###').trim()
+
+      if (textBefore) {
+        elements.push(
+          <p key={`${j}-text`} className={`${colors.text} leading-relaxed mb-2`}>
+            {parseInlineMarkup(textBefore)}
+          </p>
+        )
+      }
+
+      if (headingText) {
+        elements.push(
+          <h3 key={`${j}-h3`} className={`text-xl font-semibold ${colors.heading} mt-4 mb-2 first:mt-0`}>
+            {parseInlineMarkup(headingText)}
+          </h3>
+        )
+      }
+
+      j++
+      continue
+    }
+
+    // Divider
+    if (contentLine === '---') {
+      elements.push(
+        <hr key={j} className={`my-4 border-t ${colors.border}`} />
+      )
+      j++
+      continue
+    }
+
+    // Вложенные цитаты (только если текущий контекст - каллаут)
+    if (context === 'callout' && contentLine.startsWith('>') && !contentLine.startsWith('>>')) {
+      // Собираем контент цитаты до закрывающего тега <
+      const quoteContent: string[] = []
+      let currentQuoteLine = contentLine.substring(1).trim()
+
+      while (j < content.length) {
+        if (currentQuoteLine.includes('<')) {
+          const parts = currentQuoteLine.split('<')
+          const beforeClosing = parts[0].trim()
+          if (beforeClosing) quoteContent.push(beforeClosing)
+          // Остаток после < не обрабатываем в цитате
+          j++
+          break
+        }
+        if (currentQuoteLine) quoteContent.push(currentQuoteLine)
+        j++
+        currentQuoteLine = content[j]?.trim() || ''
+      }
+
+      // Рендерим цитату внутри каллаута
+      elements.push(
+        <blockquote key={j} className={`border-l-4 ${colors.borderQuote} pl-4 py-2 my-3 ${colors.text} italic ${colors.bgQuote} rounded-r`}>
+          {parseRichContent(quoteContent, 'quote')}
+        </blockquote>
+      )
+      continue
+    }
+
+    // Маркированные списки
+    if (contentLine.startsWith('- ') || contentLine.startsWith('* ')) {
+      const listItems = []
+      while (j < content.length && (content[j].startsWith('- ') || content[j].startsWith('* '))) {
+        listItems.push(content[j].substring(2))
+        j++
+      }
+      elements.push(
+        <ul key={j} className="my-2 space-y-1.5">
+          {listItems.map((item, idx) => (
+            <li key={idx} className={`${colors.text} leading-relaxed flex gap-3`}>
+              <span className={`${colors.text} text-2xl leading-none flex items-center h-[1.5rem]`}>•</span>
+              <span className="flex-1">{parseInlineMarkup(item)}</span>
+            </li>
+          ))}
+        </ul>
+      )
+      continue
+    }
+
+    // Нумерованные списки
+    if (/^\d+\.\s/.test(contentLine)) {
+      const listItems = []
+      while (j < content.length && /^\d+\.\s/.test(content[j])) {
+        listItems.push(content[j].replace(/^\d+\.\s/, ''))
+        j++
+      }
+      elements.push(
+        <ol key={j} className="my-2 space-y-1.5">
+          {listItems.map((item, idx) => (
+            <li key={idx} className={`${colors.text} leading-relaxed flex items-start gap-2`}>
+              <span className={`${colors.text} font-medium min-w-[1.5rem]`}>{idx + 1}.</span>
+              <span className="flex-1">{parseInlineMarkup(item)}</span>
+            </li>
+          ))}
+        </ol>
+      )
+      continue
+    }
+
+    // Обычный текст
+    elements.push(
+      <p key={j} className={`${colors.text} leading-relaxed mb-2 last:mb-0`}>
+        {parseInlineMarkup(contentLine)}
+      </p>
+    )
+    j++
+  }
+
+  return elements
 }
 
 /**
