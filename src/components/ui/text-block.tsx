@@ -211,21 +211,14 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
           while (j < calloutContent.length) {
             const contentLine = calloutContent[j]
 
-            // Заголовки H3 в callout (с пробелом или без)
-            if (contentLine.startsWith('### ')) {
+            // Заголовки H3 в callout (с пробелом или без, с цифрой впереди или без)
+            // Поддерживает: "### Title", "###Title", "1 ### Title", "1 ###Title"
+            const h3Match = contentLine.match(/^(\d+\s+)?###\s?(.+)$/)
+            if (h3Match) {
+              const title = h3Match[2]
               calloutElements.push(
                 <h3 key={j} className="text-xl font-semibold text-[#1e3a5f] mt-4 mb-2 first:mt-0">
-                  {parseInlineMarkup(contentLine.substring(4))}
-                </h3>
-              )
-              j++
-              continue
-            }
-
-            if (contentLine.startsWith('###')) {
-              calloutElements.push(
-                <h3 key={j} className="text-xl font-semibold text-[#1e3a5f] mt-4 mb-2 first:mt-0">
-                  {parseInlineMarkup(contentLine.substring(3))}
+                  {parseInlineMarkup(title)}
                 </h3>
               )
               j++
