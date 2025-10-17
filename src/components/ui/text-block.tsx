@@ -116,11 +116,16 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
         continue
       }
 
-      // Quote (цитата)
-      if (line.startsWith('> ')) {
+      // Quote (цитата) - с пробелом или без
+      if (line.startsWith('> ') || line.startsWith('>')) {
         const quoteLines = []
-        while (i < lines.length && lines[i].trim().startsWith('> ')) {
-          quoteLines.push(lines[i].trim().substring(2))
+        while (i < lines.length && (lines[i].trim().startsWith('> ') || lines[i].trim().startsWith('>'))) {
+          const trimmed = lines[i].trim()
+          if (trimmed.startsWith('> ')) {
+            quoteLines.push(trimmed.substring(2))
+          } else if (trimmed.startsWith('>')) {
+            quoteLines.push(trimmed.substring(1))
+          }
           i++
         }
         elements.push(
@@ -198,7 +203,7 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
           while (j < calloutContent.length) {
             const contentLine = calloutContent[j]
 
-            // Заголовки в callout
+            // Заголовки H3 в callout (с пробелом или без)
             if (contentLine.startsWith('### ')) {
               calloutElements.push(
                 <h3 key={j} className="text-xl font-semibold text-[#1e3a5f] mt-4 mb-2 first:mt-0">
@@ -206,6 +211,47 @@ export function TextBlock({ rawHtml, className }: TextBlockProps) {
                 </h3>
               )
               j++
+              continue
+            }
+
+            if (contentLine.startsWith('###')) {
+              calloutElements.push(
+                <h3 key={j} className="text-xl font-semibold text-[#1e3a5f] mt-4 mb-2 first:mt-0">
+                  {parseInlineMarkup(contentLine.substring(3))}
+                </h3>
+              )
+              j++
+              continue
+            }
+
+            // Divider в callout
+            if (contentLine === '---') {
+              calloutElements.push(
+                <hr key={j} className="my-4 border-t border-[#1e3a5f]/20" />
+              )
+              j++
+              continue
+            }
+
+            // Цитаты в callout
+            if (contentLine.startsWith('> ') || contentLine.startsWith('>')) {
+              const quoteLines = []
+              while (j < calloutContent.length && (calloutContent[j].startsWith('> ') || calloutContent[j].startsWith('>'))) {
+                const quoteLine = calloutContent[j]
+                if (quoteLine.startsWith('> ')) {
+                  quoteLines.push(quoteLine.substring(2))
+                } else if (quoteLine.startsWith('>')) {
+                  quoteLines.push(quoteLine.substring(1))
+                }
+                j++
+              }
+              calloutElements.push(
+                <blockquote key={j} className="border-l-4 border-[#1e3a5f]/40 pl-4 py-2 my-3 text-[#1e3a5f]/90 italic bg-[#1e3a5f]/5 rounded-r">
+                  {quoteLines.map((quoteLine, idx) => (
+                    <p key={idx} className="mb-1 last:mb-0 text-sm">{parseInlineMarkup(quoteLine)}</p>
+                  ))}
+                </blockquote>
+              )
               continue
             }
 
